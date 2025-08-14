@@ -13,17 +13,18 @@ export const useGraphStore = create((set, get) => ({
       position: { x: 250, y: 0 },
       draggable: true,
       connectable: true,
-      parentId: null,
     },
   ],
   edges: [],
 
-  setNodes: (updater) => set((state) => ({
-    nodes: typeof updater === "function" ? updater(state.nodes) : updater
-  })),
-  setEdges: (updater) => set((state) => ({
-    edges: typeof updater === "function" ? updater(state.edges) : updater
-  })),
+  setNodes: (updater) =>
+    set((state) => ({
+      nodes: typeof updater === "function" ? updater(state.nodes) : updater,
+    })),
+  setEdges: (updater) =>
+    set((state) => ({
+      edges: typeof updater === "function" ? updater(state.edges) : updater,
+    })),
 
   addNode: ({ question, answer }) =>
     set((state) => {
@@ -34,7 +35,6 @@ export const useGraphStore = create((set, get) => ({
         position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 100 },
         draggable: true,
         connectable: true,
-        parentId: null,
       };
       return { nodes: [...state.nodes, newNode] };
     }),
@@ -48,20 +48,44 @@ export const useGraphStore = create((set, get) => ({
         position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 100 },
         draggable: true,
         connectable: true,
-        parentId,
       };
-      const newEdge = { id: `${parentId}-${newId}`, source: parentId, target: newId };
-      return { nodes: [...state.nodes, newNode], edges: [...state.edges, newEdge] };
+      const newEdge = {
+        id: `${parentId}-${newId}`,
+        source: parentId,
+        target: newId,
+        createdAt: Date.now(),
+      };
+      return {
+        nodes: [...state.nodes, newNode],
+        edges: [...state.edges, newEdge],
+      };
     }),
 
-  getContextPath: (nodeId) => {
-    const nodesMap = Object.fromEntries(get().nodes.map(n => [n.id, n]));
-    let path = [];
-    let current = nodesMap[nodeId];
-    while (current) {
-      path.unshift(current.data.question);
-      current = current.parentId ? nodesMap[current.parentId] : null;
-    }
-    return path;
-  }
+  /**
+   * Build context path including all parents recursively
+   * Returns an array of "Q: ...\nA: ..." strings
+   * Deduplicates repeated nodes
+   */
+  getContextPath: (nodeId, visited = new Set()) => {
+    const { nodes, edges } = get();
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node || visited.has(nodeId)) return [];
+
+    visited.add(nodeId);
+
+    // Include current node's Q&A
+    const currentQA = node.data
+      ? [`Q: ${node.data.question || ""}\nA: ${node.data.answer || ""}`]
+      : [];
+
+    // Find all parent edges
+    const parentEdges = edges.filter(e => e.target === nodeId);
+
+    if (parentEdges.length === 0) return currentQA;
+
+    // Recursively collect context from all parents
+    const parentContext = parentEdges.flatMap(e => get().getContextPath(e.source, visited));
+
+    return [...parentContext, ...currentQA];
+  },
 }));

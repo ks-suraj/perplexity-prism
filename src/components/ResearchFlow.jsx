@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -27,31 +27,22 @@ export default function ResearchFlow() {
   );
 
   const onConnect = useCallback(
-    (connection) => setEdges((eds) => addEdge(connection, eds)),
+    (connection) =>
+      setEdges((eds) => {
+        const newEdge = { ...connection, type: "default", animated: false, createdAt: Date.now() };
+        return addEdge(newEdge, eds);
+      }),
     [setEdges]
   );
 
-  const getContextPath = (nodeId, allEdges, allNodes) => {
-    let path = [];
-    let currentId = nodeId;
-    while (true) {
-      const currentNode = allNodes.find((n) => n.id === currentId);
-      if (!currentNode) break;
-      path.unshift(currentNode.data.question);
-      const parentEdge = allEdges.find((e) => e.target === currentId);
-      if (!parentEdge) break;
-      currentId = parentEdge.source;
-    }
-    return path;
-  };
-
   const handleFollowUp = async (parentId, question) => {
-    const contextPath = getContextPath(parentId, edges, nodes);
+    const contextPath = useGraphStore.getState().getContextPath(parentId);
+
     try {
       const res = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, contextPath }),
+        body: JSON.stringify({ question, contextPath })
       });
       const data = await res.json();
       const answer = data.answer || "No answer received.";
@@ -62,30 +53,26 @@ export default function ResearchFlow() {
     }
   };
 
-  useEffect(() => {
-    // fitView only once on mount so dragging isn't reset
-  }, []);
-
   return (
     <div style={{ height: "80vh", width: "100%" }}>
       <ReactFlow
-        nodes={nodes.map((n) => ({
+        nodes={nodes.map(n => ({
           ...n,
           draggable: true,
           connectable: true,
-          data: {
-            ...n.data,
-            onFollowUp: (q) => handleFollowUp(n.id, q),
-          },
+          selectable: true,
+          data: { ...n.data, onFollowUp: (q) => handleFollowUp(n.id, q) }
         }))}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
-        nodesDraggable={true}
-        nodesConnectable={true}
-        elementsSelectable={true}
+        nodesDraggable
+        nodesConnectable
+        elementsSelectable
+        fitView={false}
+        defaultEdgeOptions={{ type: "default", animated: false }}
       >
         <MiniMap />
         <Controls />

@@ -31,8 +31,9 @@ const NodeWithFollowUp = ({ id, data }) => {
       <button onClick={handleFollowUp} className="text-sm text-blue-600 hover:underline">
         ➕ Follow-up
       </button>
-      <Handle type="target" position={Position.Top} />
-      <Handle type="source" position={Position.Bottom} />
+      {/* ✅ Explicitly allow connections on handles */}
+      <Handle type="target" position={Position.Top} isConnectable={true} />
+      <Handle type="source" position={Position.Bottom} isConnectable={true} />
     </div>
   );
 };
