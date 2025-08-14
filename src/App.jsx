@@ -1,74 +1,62 @@
+// src/App.jsx
 import React, { useState } from "react";
-import ResearchCanvas from "./components/ResearchCanvas";
+import ResearchFlow from "./components/ResearchFlow";
 import { useGraphStore } from "./store/useGraphStore";
 
-function App() {
-  const [input, setInput] = useState("");
+export default function App() {
+  const { addNode } = useGraphStore();
+  const [rootQuestion, setRootQuestion] = useState("");
   const [loading, setLoading] = useState(false);
-  const addNode = useGraphStore((state) => state.addNode);
 
-  const handleAddNode = async () => {
-    if (input.trim() === "") return;
-
+  const handleAskRoot = async () => {
+    if (!rootQuestion.trim()) return;
     setLoading(true);
+
     try {
       const res = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          question: input.trim(),
-          contextPath: [], // For main questions, no parent context
+          question: rootQuestion,
+          contextPath: [],
         }),
       });
 
       const data = await res.json();
-
-      addNode({
-        question: input.trim(),
-        answer: data.answer || "No answer received.",
-      });
-
-      setInput("");
+      const answer = data.answer || "No answer received.";
+      addNode({ question: rootQuestion, answer });
+      setRootQuestion("");
     } catch (err) {
-      console.error("Error fetching answer:", err);
-      addNode({
-        question: input.trim(),
-        answer: "Error fetching answer.",
-      });
+      console.error("Error fetching root answer:", err);
+      addNode({ question: rootQuestion, answer: "Error fetching answer." });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900">Perplexity Prism</h1>
-        <p className="text-lg text-gray-600 mt-2">
-          Your visual research copilot, powered by Perplexity.
-        </p>
-      </div>
-
-      <div className="flex justify-center items-center space-x-2">
+    <div className="w-full h-screen flex flex-col">
+      <div className="p-4 border-b flex gap-2">
         <input
           type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask a new question..."
-          className="border rounded px-3 py-2 w-96"
-          disabled={loading}
+          className="flex-1 border rounded p-2"
+          placeholder="Ask your root question..."
+          value={rootQuestion}
+          onChange={(e) => setRootQuestion(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAskRoot()}
         />
         <button
-          onClick={handleAddNode}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-blue-500 text-white rounded px-4 py-2"
+          onClick={handleAskRoot}
           disabled={loading}
         >
-          {loading ? "Asking..." : "Ask New Question"}
+          {loading ? "Asking..." : "Ask"}
         </button>
       </div>
 
-      <ResearchCanvas />
+      <div className="flex-1">
+        <ResearchFlow />
+      </div>
     </div>
   );
 }
-
-export default App;
