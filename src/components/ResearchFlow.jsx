@@ -14,7 +14,7 @@ import NodeWithFollowUp from "./NodeWithFollowUp";
 const nodeTypes = { default: NodeWithFollowUp };
 
 export default function ResearchFlow() {
-  const { nodes, edges, setNodes, setEdges, addFollowUp } = useGraphStore();
+  const { nodes, edges, setNodes, setEdges, addNode, addFollowUp } = useGraphStore();
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -53,8 +53,35 @@ export default function ResearchFlow() {
     }
   };
 
+  const handleAddNode = async () => {
+    const question = prompt("Enter your question:");
+    if (!question) return;
+
+    try {
+      const res = await fetch("/api/tldr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+      const json = await res.json();
+      addNode({
+        question: json.title || question,
+        answer: json.description || "",
+      });
+    } catch (err) {
+      console.error("Error generating TL;DR:", err);
+      addNode({ question, answer: "" });
+    }
+  };
+
   return (
     <div style={{ height: "80vh", width: "100%" }}>
+      <button
+        onClick={handleAddNode}
+        className="absolute z-10 m-2 px-3 py-1 bg-blue-500 text-white rounded"
+      >
+        Add Node (AI)
+      </button>
       <ReactFlow
         nodes={nodes.map(n => ({
           ...n,

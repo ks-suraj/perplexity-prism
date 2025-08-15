@@ -1,42 +1,36 @@
 import React, { useState } from "react";
 import { Handle, Position } from "reactflow";
 import { useGraphStore } from "../store/useGraphStore";
+import { generateNodeSummary } from "../utils/aiGeneration";
 
 const NodeWithFollowUp = ({ id, data }) => {
-  const addFollowUp = useGraphStore((state) => state.addFollowUp);
+  const addFollowUpBlank = useGraphStore((state) => state.addFollowUpBlank);
+  const updateNode = useGraphStore((state) => state.updateNode);
   const getContextPath = useGraphStore((state) => state.getContextPath);
   const toggleCollapse = useGraphStore((state) => state.toggleCollapse);
 
-  const [isAsking, setIsAsking] = useState(false);
-  const [followUpText, setFollowUpText] = useState("");
-  const [loadingSuggestion, setLoadingSuggestion] = useState(false);
+  const [followUpText, setFollowUpText] = useState(data.question || "");
+  const [loadingAsk, setLoadingAsk] = useState(false);
+  const [loadingSummary, setLoadingSummary] = useState(false);
 
-  // Auto-generate follow-up suggestion
-  const handleSuggestFollowUp = async () => {
-    setLoadingSuggestion(true);
-    setIsAsking(true);
+  const fetchSummaryAsTLDR = async () => {
+    if (loadingSummary || !data.answer) return;
+    setLoadingSummary(true);
 
     try {
-      const contextPath = getContextPath(id);
-      const res = await fetch("/api/autosuggest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contextPath }),
-      });
-
-      const { suggestion } = await res.json();
-      setFollowUpText(suggestion || "");
+      const summary = await generateNodeSummary(data.question, data.answer);
+      updateNode(id, { tldr: summary.description || "(No summary generated)" });
     } catch (err) {
-      console.error("Error fetching suggestion:", err);
-      setFollowUpText("Error generating suggestion.");
+      console.error("Failed to generate TLDR:", err);
+      updateNode(id, { tldr: "(Error generating summary)" });
     }
 
-    setLoadingSuggestion(false);
+    setLoadingSummary(false);
   };
 
-  // Submit follow-up after edit
   const handleSubmitFollowUp = async () => {
     if (!followUpText.trim()) return;
+    setLoadingAsk(true);
     const contextPath = getContextPath(id);
 
     try {
@@ -46,71 +40,97 @@ const NodeWithFollowUp = ({ id, data }) => {
         body: JSON.stringify({ question: followUpText, contextPath }),
       });
       const dataRes = await res.json();
-      addFollowUp(id, followUpText, dataRes.answer || "No answer received.");
+      const answerText = dataRes.answer || "No answer received.";
+
+      updateNode(id, {
+        question: followUpText,
+        answer: answerText,
+        isBlankFollowUp: false,
+        tldr: "", // TLDR box hidden until requested
+      });
     } catch (err) {
-      console.error("Error fetching follow-up:", err);
-      addFollowUp(id, followUpText, "Error fetching answer.");
+      console.error(err);
+      updateNode(id, {
+        question: followUpText,
+        answer: "Error fetching answer.",
+        isBlankFollowUp: false,
+        tldr: "",
+      });
     }
 
-    setIsAsking(false);
-    setFollowUpText("");
+    setLoadingAsk(false);
   };
 
-  const tldr = data.answer ? data.answer.split(".")[0] + "." : "";
-
   return (
-    <div className="bg-white rounded shadow p-4 border border-gray-300 min-w-[200px]">
-      <div className="font-semibold text-gray-800 mb-2">{data.question}</div>
+    <div className="relative bg-white rounded shadow p-4 border border-gray-300 min-w-[200px]">
+      {/* Main Node Question */}
+      <div className="font-semibold text-gray-800 mb-2">
+        {data.isBlankFollowUp ? (
+          <input
+            type="text"
+            value={followUpText}
+            onChange={(e) => setFollowUpText(e.target.value)}
+            placeholder="Type your follow-up..."
+            className="text-xs px-2 py-1 border rounded w-full"
+          />
+        ) : (
+          data.question
+        )}
+      </div>
 
-      {!data.collapsed ? (
-        data.answer && <div className="text-sm text-gray-600 mb-2">{data.answer}</div>
-      ) : (
-        <div className="text-sm italic text-gray-500 mb-2">{tldr || "(No summary)"}</div>
+      {/* Main Node Answer */}
+      {!data.isBlankFollowUp && !data.collapsed && (
+        <div className="text-sm text-gray-600 mb-2">
+          {data.answer || "(No answer yet)"}
+        </div>
       )}
 
-      {!isAsking ? (
+      {/* Action Buttons */}
+      {data.isBlankFollowUp ? (
         <div className="flex gap-2">
+          <button
+            onClick={handleSubmitFollowUp}
+            disabled={loadingAsk}
+            className="text-xs px-2 py-1 border rounded bg-blue-500 text-white hover:bg-blue-600"
+          >
+            {loadingAsk ? "Asking..." : "Ask"}
+          </button>
+        </div>
+      ) : (
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => toggleCollapse(id)}
             className="text-xs px-2 py-1 border rounded hover:bg-gray-100"
           >
             {data.collapsed ? "Expand" : "Collapse"}
           </button>
+
           <button
-            onClick={handleSuggestFollowUp}
+            onClick={fetchSummaryAsTLDR}
+            className="text-xs px-2 py-1 border rounded text-purple-600 hover:bg-purple-50"
+          >
+            {loadingSummary ? "Summarizing..." : "TLDR"}
+          </button>
+
+          <button
+            onClick={() => addFollowUpBlank(id)}
             className="text-xs px-2 py-1 border rounded text-blue-600 hover:bg-blue-50"
           >
-            ➕ {loadingSuggestion ? "Loading..." : "Follow-up"}
+            ➕ Follow-up
           </button>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-2">
-          <input
-            type="text"
-            value={followUpText}
-            onChange={(e) => setFollowUpText(e.target.value)}
-            className="text-xs px-2 py-1 border rounded w-full"
-            placeholder="Type your follow-up..."
-          />
-          <div className="flex gap-2">
-            <button
-              onClick={handleSubmitFollowUp}
-              className="text-xs px-2 py-1 border rounded bg-blue-500 text-white hover:bg-blue-600"
-            >
-              Ask
-            </button>
-            <button
-              onClick={() => setIsAsking(false)}
-              className="text-xs px-2 py-1 border rounded hover:bg-gray-100"
-            >
-              Cancel
-            </button>
-          </div>
         </div>
       )}
 
-      <Handle type="target" position={Position.Top} isConnectable={true} />
-      <Handle type="source" position={Position.Bottom} isConnectable={true} />
+      {/* TLDR Box — visually attached */}
+      {!data.isBlankFollowUp && data.tldr && (
+        <div className="absolute top-0 left-full ml-2 w-56 bg-purple-50 border border-purple-300 p-2 rounded text-purple-800 text-xs shadow">
+          <strong>TLDR:</strong>
+          <div>{data.tldr}</div>
+        </div>
+      )}
+
+      <Handle type="target" position={Position.Top} isConnectable />
+      <Handle type="source" position={Position.Bottom} isConnectable />
     </div>
   );
 };

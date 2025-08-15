@@ -9,7 +9,7 @@ export const useGraphStore = create((set, get) => ({
         question: "Welcome to Perplexity Prism", 
         answer: "", 
         label: "Welcome to Perplexity Prism",
-        collapsed: false
+        collapsed: false,
       },
       position: { x: 250, y: 0 },
       draggable: true,
@@ -40,27 +40,60 @@ export const useGraphStore = create((set, get) => ({
       return { nodes: [...state.nodes, newNode] };
     }),
 
-  addFollowUp: (parentId, question, answer) =>
+  addFollowUpBlank: (parentId) =>
     set((state) => {
       const newId = nanoid();
       const newNode = {
         id: newId,
-        data: { question, answer, label: `${question} — ${answer}`, collapsed: false },
+        data: { question: "", answer: "", isBlankFollowUp: true, collapsed: false },
         position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 100 },
         draggable: true,
         connectable: true,
       };
-      const newEdge = {
-        id: `${parentId}-${newId}`,
-        source: parentId,
-        target: newId,
-        createdAt: Date.now(),
-      };
+      const newEdge = { id: `${parentId}-${newId}`, source: parentId, target: newId };
       return {
         nodes: [...state.nodes, newNode],
         edges: [...state.edges, newEdge],
       };
     }),
+
+  addTLDRNode: (parentId, tldrText) =>
+    set((state) => {
+      const newId = nanoid();
+      const parentNode = state.nodes.find((n) => n.id === parentId);
+      const newNode = {
+        id: newId,
+        data: { question: "TLDR", answer: tldrText, isTLDR: true, collapsed: false },
+        position: {
+          x: (parentNode?.position?.x || 0) + 300,
+          y: (parentNode?.position?.y || 0),
+        },
+        draggable: true,
+        connectable: true,
+      };
+      const newEdge = { id: `${parentId}-${newId}`, source: parentId, target: newId };
+      return {
+        nodes: [...state.nodes, newNode],
+        edges: [...state.edges, newEdge],
+      };
+    }),
+
+  updateNode: (nodeId, newData) =>
+    set((state) => ({
+      nodes: state.nodes.map((n) =>
+        n.id === nodeId
+          ? { 
+              ...n, 
+              data: { 
+                ...n.data, 
+                ...newData, 
+                label: `${newData.question || n.data.question} — ${newData.answer || n.data.answer}`,
+                isBlankFollowUp: false
+              } 
+            }
+          : n
+      ),
+    })),
 
   toggleCollapse: (nodeId) =>
     set((state) => ({
@@ -71,11 +104,6 @@ export const useGraphStore = create((set, get) => ({
       ),
     })),
 
-  /**
-   * Build context path including all parents recursively
-   * Returns an array of "Q: ...\nA: ..." strings
-   * Deduplicates repeated nodes
-   */
   getContextPath: (nodeId, visited = new Set()) => {
     const { nodes, edges } = get();
     const node = nodes.find(n => n.id === nodeId);
@@ -88,7 +116,6 @@ export const useGraphStore = create((set, get) => ({
       : [];
 
     const parentEdges = edges.filter(e => e.target === nodeId);
-
     if (parentEdges.length === 0) return currentQA;
 
     const parentContext = parentEdges.flatMap(e => get().getContextPath(e.source, visited));
