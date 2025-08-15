@@ -8,7 +8,8 @@ export const useGraphStore = create((set, get) => ({
       data: { 
         question: "Welcome to Perplexity Prism", 
         answer: "", 
-        label: "Welcome to Perplexity Prism" 
+        label: "Welcome to Perplexity Prism",
+        collapsed: false
       },
       position: { x: 250, y: 0 },
       draggable: true,
@@ -31,7 +32,7 @@ export const useGraphStore = create((set, get) => ({
       const id = nanoid();
       const newNode = {
         id,
-        data: { question, answer, label: `${question} — ${answer}` },
+        data: { question, answer, label: `${question} — ${answer}`, collapsed: false },
         position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 100 },
         draggable: true,
         connectable: true,
@@ -44,7 +45,7 @@ export const useGraphStore = create((set, get) => ({
       const newId = nanoid();
       const newNode = {
         id: newId,
-        data: { question, answer, label: `${question} — ${answer}` },
+        data: { question, answer, label: `${question} — ${answer}`, collapsed: false },
         position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 100 },
         draggable: true,
         connectable: true,
@@ -61,6 +62,15 @@ export const useGraphStore = create((set, get) => ({
       };
     }),
 
+  toggleCollapse: (nodeId) =>
+    set((state) => ({
+      nodes: state.nodes.map((n) =>
+        n.id === nodeId
+          ? { ...n, data: { ...n.data, collapsed: !n.data.collapsed } }
+          : n
+      ),
+    })),
+
   /**
    * Build context path including all parents recursively
    * Returns an array of "Q: ...\nA: ..." strings
@@ -73,17 +83,14 @@ export const useGraphStore = create((set, get) => ({
 
     visited.add(nodeId);
 
-    // Include current node's Q&A
     const currentQA = node.data
       ? [`Q: ${node.data.question || ""}\nA: ${node.data.answer || ""}`]
       : [];
 
-    // Find all parent edges
     const parentEdges = edges.filter(e => e.target === nodeId);
 
     if (parentEdges.length === 0) return currentQA;
 
-    // Recursively collect context from all parents
     const parentContext = parentEdges.flatMap(e => get().getContextPath(e.source, visited));
 
     return [...parentContext, ...currentQA];
