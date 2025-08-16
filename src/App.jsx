@@ -1,12 +1,14 @@
 // src/App.jsx
 import React, { useState } from "react";
-import ResearchFlow from "./components/ResearchFlow";
 import { useGraphStore } from "./store/useGraphStore";
+import ResearchFlow from "./components/ResearchFlow";
+import ChatUI from "./components/ChatUI";
 
 export default function App() {
   const { addNode } = useGraphStore();
   const [rootQuestion, setRootQuestion] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState("tree"); // "tree" or "chat"
 
   const handleAskRoot = async () => {
     if (!rootQuestion.trim()) return;
@@ -36,7 +38,8 @@ export default function App() {
 
   return (
     <div className="w-full h-screen flex flex-col">
-      <div className="p-4 border-b flex gap-2">
+      {/* Header with Root Question & Mode Switch */}
+      <div className="p-4 border-b flex gap-2 items-center">
         <input
           type="text"
           className="flex-1 border rounded p-2"
@@ -52,10 +55,19 @@ export default function App() {
         >
           {loading ? "Asking..." : "Ask"}
         </button>
+
+        {/* Mode Toggle */}
+        <button
+          className="ml-2 bg-gray-200 text-gray-800 rounded px-4 py-2 hover:bg-gray-300"
+          onClick={() => setMode(mode === "tree" ? "chat" : "tree")}
+        >
+          Switch to {mode === "tree" ? "Chat" : "Tree"} View
+        </button>
       </div>
 
-      <div className="flex-1">
-        <ResearchFlow />
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        {mode === "tree" ? <ResearchFlow /> : <ChatUI />}
       </div>
     </div>
   );
