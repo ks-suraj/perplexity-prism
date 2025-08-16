@@ -10,6 +10,7 @@ export const useGraphStore = create((set, get) => ({
         answer: "", 
         label: "Welcome to Perplexity Prism",
         collapsed: false,
+        tldr: "",
       },
       position: { x: 250, y: 0 },
       draggable: true,
@@ -32,7 +33,7 @@ export const useGraphStore = create((set, get) => ({
       const id = nanoid();
       const newNode = {
         id,
-        data: { question, answer, label: `${question} — ${answer}`, collapsed: false },
+        data: { question, answer, label: `${question} — ${answer}`, collapsed: false, tldr: "" },
         position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 100 },
         draggable: true,
         connectable: true,
@@ -45,29 +46,8 @@ export const useGraphStore = create((set, get) => ({
       const newId = nanoid();
       const newNode = {
         id: newId,
-        data: { question: "", answer: "", isBlankFollowUp: true, collapsed: false },
+        data: { question: "", answer: "", isBlankFollowUp: true, collapsed: false, tldr: "" },
         position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 100 },
-        draggable: true,
-        connectable: true,
-      };
-      const newEdge = { id: `${parentId}-${newId}`, source: parentId, target: newId };
-      return {
-        nodes: [...state.nodes, newNode],
-        edges: [...state.edges, newEdge],
-      };
-    }),
-
-  addTLDRNode: (parentId, tldrText) =>
-    set((state) => {
-      const newId = nanoid();
-      const parentNode = state.nodes.find((n) => n.id === parentId);
-      const newNode = {
-        id: newId,
-        data: { question: "TLDR", answer: tldrText, isTLDR: true, collapsed: false },
-        position: {
-          x: (parentNode?.position?.x || 0) + 300,
-          y: (parentNode?.position?.y || 0),
-        },
         draggable: true,
         connectable: true,
       };
@@ -88,7 +68,7 @@ export const useGraphStore = create((set, get) => ({
                 ...n.data, 
                 ...newData, 
                 label: `${newData.question || n.data.question} — ${newData.answer || n.data.answer}`,
-                isBlankFollowUp: false
+                isBlankFollowUp: false,
               } 
             }
           : n
