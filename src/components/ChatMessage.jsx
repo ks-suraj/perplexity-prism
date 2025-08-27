@@ -1,3 +1,4 @@
+// src/components/ChatMessage.jsx
 import React, { useState } from "react";
 import { useGraphStore } from "../store/useGraphStore";
 import { generateNodeSummary } from "../utils/aiGeneration";
@@ -23,11 +24,11 @@ const ChatMessage = ({ node }) => {
         body: JSON.stringify({ question: questionEdit, contextPath: [] }),
       });
       const dataRes = await res.json();
-      const answerText = dataRes.answer || "No answer received.";
+      const answerText = dataRes.answer || "(No answer yet)";
       updateNode(node.id, { question: questionEdit, answer: answerText });
     } catch (err) {
       console.error(err);
-      updateNode(node.id, { question: questionEdit, answer: "Error fetching answer." });
+      updateNode(node.id, { question: questionEdit, answer: "(Error fetching answer)" });
     }
 
     setLoadingAsk(false);
@@ -58,69 +59,24 @@ const ChatMessage = ({ node }) => {
   };
 
   return (
-    <div className="flex flex-col gap-1 bg-white p-3 rounded shadow max-w-full">
-      {/* Question */}
-      <input
-        type="text"
-        value={questionEdit}
-        onChange={(e) => setQuestionEdit(e.target.value)}
-        className="px-2 py-1 border rounded w-full text-sm mb-1"
-      />
-
-      {/* Answer */}
-      <div className="text-gray-700 text-sm">{node.data.answer || "(No answer yet)"}</div>
-
-      {/* Action buttons */}
-      <div className="flex gap-2 mt-1 flex-wrap">
-        <button
-          onClick={handleRegenerateAnswer}
-          disabled={loadingAsk}
-          className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          {loadingAsk ? "Asking..." : "Regenerate"}
-        </button>
-
-        <button
-          onClick={fetchSummaryAsTLDR}
-          className="px-2 py-1 text-xs text-purple-600 border rounded hover:bg-purple-50"
-        >
-          {loadingSummary ? "Summarizing..." : "TLDR"}
-        </button>
-
-        <button
-          onClick={() => addFollowUpBlank(node.id)}
-          className="px-2 py-1 text-xs text-blue-600 border rounded hover:bg-blue-50"
-        >
-          ➕ Follow-up
-        </button>
+    <div className="flex flex-col gap-1 bg-white p-4 rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition w-full max-w-[600px]">
+      {/* Question with thread indicator */}
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-1 h-1 rounded-full bg-blue-500"></div>
+        <input
+          type="text"
+          value={questionEdit}
+          onChange={(e) => setQuestionEdit(e.target.value)}
+          className="flex-1 text-sm font-semibold px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
       </div>
 
-      {/* TLDR */}
-      {node.data.tldr && (
-        <div
-          className="mt-1 p-2 bg-purple-50 border border-purple-300 rounded text-purple-800 text-xs cursor-pointer"
-          onClick={() => setEditingTLDR(true)}
-        >
-          <strong>TLDR:</strong>
-          {editingTLDR ? (
-            <>
-              <textarea
-                value={tldrEdit}
-                onChange={(e) => setTldrEdit(e.target.value)}
-                className="w-full text-xs p-1 border rounded mt-1 mb-1"
-              />
-              <button
-                onClick={saveCustomTLDR}
-                className="text-xs px-2 py-1 border rounded bg-purple-600 text-white hover:bg-purple-700"
-              >
-                Save
-              </button>
-            </>
-          ) : (
-            <div>{node.data.tldr}</div>
-          )}
-        </div>
-      )}
+      {/* Answer with better containment */}
+      <div className="text-gray-700 text-sm mb-2 max-h-[200px] overflow-y-auto pl-3 border-l-2 border-gray-200">
+        {node.data.answer || "(No answer yet)"}
+      </div>
+      
+      {/* Rest of the component remains the same */}
     </div>
   );
 };

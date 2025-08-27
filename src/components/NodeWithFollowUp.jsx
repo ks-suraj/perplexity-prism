@@ -1,3 +1,4 @@
+// src/components/NodeWithFollowUp.jsx
 import React, { useState } from "react";
 import { Handle, Position } from "reactflow";
 import { useGraphStore } from "../store/useGraphStore";
@@ -29,7 +30,6 @@ const NodeWithFollowUp = ({ id, data }) => {
       });
       const dataRes = await res.json();
       const answerText = dataRes.answer || "No answer received.";
-
       updateNode(id, { question: questionEdit, answer: answerText });
     } catch (err) {
       console.error(err);
@@ -48,7 +48,7 @@ const NodeWithFollowUp = ({ id, data }) => {
       const summary = await generateNodeSummary(data.question, data.answer);
       updateNode(id, { tldr: summary.description || "(No summary generated)" });
       setTldrEdit(summary.description || "");
-      setEditingTLDR(true); // automatically enable edit after generating
+      setEditingTLDR(true);
     } catch (err) {
       console.error(err);
       updateNode(id, { tldr: "(Error generating summary)" });
@@ -65,81 +65,86 @@ const NodeWithFollowUp = ({ id, data }) => {
   };
 
   return (
-    <div className="relative bg-white rounded shadow p-4 border border-gray-300 min-w-[220px]">
+    <div className="relative bg-white rounded-2xl shadow-lg border border-gray-200 p-4 min-w-[180px] max-w-[300px] hover:shadow-xl transition-all">
       {/* Question */}
-      <div className="font-semibold text-gray-800 mb-2">
-        <input
-          type="text"
-          value={questionEdit}
-          onChange={(e) => setQuestionEdit(e.target.value)}
-          className="text-xs px-2 py-1 border rounded w-full"
-        />
-      </div>
+      <input
+        type="text"
+        value={questionEdit}
+        onChange={(e) => setQuestionEdit(e.target.value)}
+        className="text-sm font-semibold w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400 mb-2"
+      />
 
-      {/* Answer */}
+      {/* Answer - Added max height and overflow control */}
       {!data.isBlankFollowUp && !data.collapsed && (
-        <div className="text-sm text-gray-600 mb-2">{data.answer || "(No answer yet)"}</div>
+        <div className="text-gray-700 text-sm mb-2 max-h-[200px] overflow-y-auto">
+          {data.answer || "(No answer yet)"}
+        </div>
       )}
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Keeping existing buttons */}
       <div className="flex gap-2 flex-wrap mb-2">
         <button
           onClick={handleRegenerateAnswer}
           disabled={loadingAsk}
-          className="text-xs px-2 py-1 border rounded bg-blue-500 text-white hover:bg-blue-600"
+          className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition"
         >
           {loadingAsk ? "Asking..." : "Regenerate"}
         </button>
 
         <button
           onClick={fetchSummaryAsTLDR}
-          className="text-xs px-2 py-1 border rounded text-purple-600 hover:bg-purple-50"
+          className="px-2 py-1 text-xs text-purple-600 border rounded hover:bg-purple-50 transition"
         >
           {loadingSummary ? "Summarizing..." : "TLDR"}
         </button>
 
         <button
           onClick={() => addFollowUpBlank(id)}
-          className="text-xs px-2 py-1 border rounded text-blue-600 hover:bg-blue-50"
+          className="px-2 py-1 text-xs text-blue-600 border rounded hover:bg-blue-50 transition"
         >
           ➕ Follow-up
         </button>
 
         <button
           onClick={() => toggleCollapse(id)}
-          className="text-xs px-2 py-1 border rounded hover:bg-gray-100"
+          className="px-2 py-1 text-xs border rounded hover:bg-gray-100 transition"
         >
           {data.collapsed ? "Expand" : "Collapse"}
         </button>
       </div>
 
-      {/* TLDR Box — always editable */}
+      {/* TLDR Panel - Repositioned to right side */}
       {data.tldr && (
         <div
-          className="absolute top-0 left-full ml-2 w-56 bg-purple-50 border border-purple-300 p-2 rounded text-purple-800 text-xs shadow"
+          className="absolute top-1/2 left-full -translate-y-1/2 ml-3 w-64 bg-purple-50 border border-purple-300 p-2 rounded-lg text-purple-800 text-xs shadow-lg cursor-pointer transition-all"
           onClick={() => setEditingTLDR(true)}
         >
           <strong>TLDR:</strong>
           {editingTLDR ? (
-            <>
+            <div className="mt-1">
               <textarea
                 value={tldrEdit}
                 onChange={(e) => setTldrEdit(e.target.value)}
-                className="w-full text-xs p-1 border rounded mt-1 mb-1"
+                className="w-full text-xs p-1 border rounded mb-1"
+                rows={3}
               />
               <button
-                onClick={saveCustomTLDR}
-                className="text-xs px-2 py-1 border rounded bg-purple-600 text-white hover:bg-purple-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  saveCustomTLDR();
+                }}
+                className="px-2 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 transition"
               >
                 Save
               </button>
-            </>
+            </div>
           ) : (
-            <div>{data.tldr}</div>
+            <div className="mt-1">{data.tldr}</div>
           )}
         </div>
       )}
 
+      {/* Connection Handles */}
       <Handle type="target" position={Position.Top} isConnectable />
       <Handle type="source" position={Position.Bottom} isConnectable />
     </div>

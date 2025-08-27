@@ -1,3 +1,4 @@
+// src/components/ResearchFlow.jsx
 import React, { useCallback } from "react";
 import ReactFlow, {
   MiniMap,
@@ -5,13 +6,15 @@ import ReactFlow, {
   Background,
   applyNodeChanges,
   applyEdgeChanges,
-  addEdge
+  addEdge,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { useGraphStore } from "../store/useGraphStore";
 import NodeWithFollowUp from "./NodeWithFollowUp";
 
-const nodeTypes = { default: NodeWithFollowUp };
+const nodeTypes = {
+  default: NodeWithFollowUp,
+};
 
 export default function ResearchFlow() {
   const { nodes, edges, setNodes, setEdges, addNode, addFollowUp } = useGraphStore();
@@ -29,7 +32,7 @@ export default function ResearchFlow() {
   const onConnect = useCallback(
     (connection) =>
       setEdges((eds) => {
-        const newEdge = { ...connection, type: "default", animated: false, createdAt: Date.now() };
+        const newEdge = { ...connection, type: "smoothstep", animated: true, createdAt: Date.now() };
         return addEdge(newEdge, eds);
       }),
     [setEdges]
@@ -42,7 +45,7 @@ export default function ResearchFlow() {
       const res = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, contextPath })
+        body: JSON.stringify({ question, contextPath }),
       });
       const data = await res.json();
       const answer = data.answer || "No answer received.";
@@ -75,20 +78,24 @@ export default function ResearchFlow() {
   };
 
   return (
-    <div style={{ height: "80vh", width: "100%" }}>
+    <div className="relative w-full h-full">
+      {/* Floating Add Node Button */}
       <button
         onClick={handleAddNode}
-        className="absolute z-10 m-2 px-3 py-1 bg-blue-500 text-white rounded"
+        className="absolute z-20 top-4 left-4 px-4 py-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all duration-200"
+        title="Add AI Node"
       >
-        Add Node (AI)
+        + Add Node
       </button>
+
       <ReactFlow
-        nodes={nodes.map(n => ({
+        nodes={nodes.map((n) => ({
           ...n,
           draggable: true,
           connectable: true,
           selectable: true,
-          data: { ...n.data, onFollowUp: (q) => handleFollowUp(n.id, q) }
+          style: { width: 'auto', height: 'auto' }, // Add this line
+          data: { ...n.data, onFollowUp: (q) => handleFollowUp(n.id, q) },
         }))}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -98,12 +105,22 @@ export default function ResearchFlow() {
         nodesDraggable
         nodesConnectable
         elementsSelectable
-        fitView={false}
-        defaultEdgeOptions={{ type: "default", animated: false }}
+        fitView
+        minZoom={0.2}
+        maxZoom={2}
+        defaultEdgeOptions={{ type: "smoothstep", animated: true, style: { stroke: "#888" } }}
       >
-        <MiniMap />
-        <Controls />
-        <Background />
+        {/* MiniMap Customization */}
+        <MiniMap
+          nodeColor={(n) => (n.data.isBlankFollowUp ? "#A78BFA" : "#60A5FA")}
+          nodeStrokeWidth={2}
+          nodeBorderRadius={8}
+          maskColor="rgba(0,0,0,0.1)"
+        />
+        {/* Controls Styling */}
+        <Controls showInteractive={false} />
+        {/* Background Grid */}
+        <Background gap={16} size={1} color="#e0e0e0" />
       </ReactFlow>
     </div>
   );

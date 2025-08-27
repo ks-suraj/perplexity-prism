@@ -37,32 +37,51 @@ export default function App() {
   };
 
   return (
-    <div className="w-full h-screen flex flex-col">
-      {/* Header with Root Question & Mode Switch */}
-      <div className="p-4 border-b flex gap-2 items-center">
-        <input
-          type="text"
-          className="flex-1 border rounded p-2"
-          placeholder="Ask your root question..."
-          value={rootQuestion}
-          onChange={(e) => setRootQuestion(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleAskRoot()}
-        />
-        <button
-          className="bg-blue-500 text-white rounded px-4 py-2"
-          onClick={handleAskRoot}
-          disabled={loading}
-        >
-          {loading ? "Asking..." : "Ask"}
-        </button>
+    <div className="w-full h-screen flex flex-col bg-bgGray">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-20 bg-white shadow-md p-4 flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
+        {/* Input + Ask Button */}
+        <div className="flex flex-1 gap-2">
+          <input
+            type="text"
+            value={rootQuestion}
+            onChange={(e) => setRootQuestion(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAskRoot()}
+            placeholder="Ask your root question..."
+            className="flex-1 px-4 py-2 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+          />
+          <button
+            onClick={handleAskRoot}
+            disabled={loading}
+            className="px-4 py-2 rounded-xl bg-primary text-white hover:bg-blue-600 transition-all shadow-sm"
+          >
+            {loading ? "Asking..." : "Ask"}
+          </button>
+        </div>
 
-        {/* Mode Toggle */}
-        <button
-          className="ml-2 bg-gray-200 text-gray-800 rounded px-4 py-2 hover:bg-gray-300"
-          onClick={() => setMode(mode === "tree" ? "chat" : "tree")}
-        >
-          Switch to {mode === "tree" ? "Chat" : "Tree"} View
-        </button>
+        {/* Mode Toggle Tabs */}
+        <div className="mt-2 md:mt-0 flex gap-2">
+          <button
+            onClick={() => setMode("tree")}
+            className={`px-4 py-2 rounded-xl transition-all font-semibold ${
+              mode === "tree"
+                ? "bg-primary text-white shadow-sm"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            }`}
+          >
+            Tree
+          </button>
+          <button
+            onClick={() => setMode("chat")}
+            className={`px-4 py-2 rounded-xl transition-all font-semibold ${
+              mode === "chat"
+                ? "bg-primary text-white shadow-sm"
+                : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+            }`}
+          >
+            Chat
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
