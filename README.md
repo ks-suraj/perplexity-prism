@@ -110,26 +110,11 @@ See [STYLE_GUIDE.md](./STYLE_GUIDE.md) for complete design system documentation.
 
 ## 🏗️ Architecture
 
-### Frontend Structure
-```
-src/
-├── components/          # React components
-│   ├── App.jsx         # Main application
-│   ├── ResearchFlow.jsx # Node-based research view
-│   ├── ChatUI.jsx      # Chat interface
-│   ├── NodeWithFollowUp.jsx # Interactive research nodes
-│   ├── ChatMessage.jsx # Chat message components
-│   └── ChatThread.jsx  # Threaded conversation view
-├── store/              # State management
-│   └── useGraphStore.js # Zustand store for graph data
-├── utils/              # Utility functions
-│   └── aiGeneration.js # AI integration utilities
-└── index.css           # Global styles and design system
-```
+
 
 ### Backend Integration
 - **Express Server**: RESTful API endpoints
-- **AI Integration**: OpenAI/Claude API integration
+- **AI Integration**: perplexity API integration
 - **Context Management**: Conversation history and context paths
 
 ## 🎯 Key Components
