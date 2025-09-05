@@ -1,176 +1,201 @@
-# Perplexity Prism
+# 🌌 Perplexity Prism
 
-A modern, AI-powered research tool with a beautiful, Perplexity AI-inspired interface. Explore research topics through interactive conversation and visual flow diagrams.
-
-![Perplexity Prism](https://img.shields.io/badge/Design-Perplexity%20AI%20Inspired-blue)
-![React](https://img.shields.io/badge/React-19.1.1-blue)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1.11-38B2AC)
-![Vite](https://img.shields.io/badge/Vite-7.1.0-646CFF)
-
-## ✨ Features
-
-### 🎨 Modern Design
-- **Perplexity AI-inspired UI**: Clean, minimal, and highly polished interface
-- **Responsive Design**: Perfect scaling for desktop, tablet, and mobile
-- **Smooth Animations**: Subtle micro-interactions and transitions
-- **Accessibility**: WCAG-compliant with keyboard navigation and ARIA labels
-
-### 🔬 Research Modes
-- **Research Flow**: Visual node-based research exploration
-- **Chat Interface**: Conversational research with threaded discussions
-- **Interactive Nodes**: Drag, connect, and organize research insights
-
-### 🤖 AI-Powered Features
-- **Smart Q&A**: Ask questions and get AI-generated answers
-- **Context Awareness**: Follow-up questions maintain conversation context
-- **Auto-Summarization**: Generate TLDR summaries for any research node
-- **Dynamic Generation**: Real-time answer regeneration and refinement
-
-### 🛠️ Technical Features
-- **React 19**: Latest React with modern hooks and patterns
-- **Tailwind CSS 4**: Utility-first styling with custom design system
-- **ReactFlow**: Interactive node-based flow diagrams
-- **Zustand**: Lightweight state management
-- **Lucide Icons**: Beautiful, consistent iconography
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-
-### Installation
-```bash
-# Clone the repository
-git clone <repository-url>
-cd perplexity-prism
-
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
-
-# Start the backend server (in a separate terminal)
-npm run server
-```
-
-### Development
-```bash
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Run linting
-npm run lint
-```
-
-## 🎨 Design System
-
-This project features a comprehensive design system inspired by Perplexity AI:
-
-### Colors
-- **Primary**: Blue gradient (`#3b82f6` to `#1e3a8a`)
-- **Secondary**: Purple gradient (`#a855f7` to `#581c87`)
-- **Neutral**: Gray scale with proper contrast ratios
-- **Semantic**: Success, warning, and error states
-
-### Typography
-- **Font**: Inter (Google Fonts)
-- **Weights**: 300-800 range
-- **Hierarchy**: Clear text sizing and spacing
-
-### Components
-- **Buttons**: Primary, secondary, and ghost variants
-- **Cards**: Elevated with hover effects
-- **Inputs**: Search and standard variants
-- **Icons**: Lucide React icon set
-
-See [STYLE_GUIDE.md](./STYLE_GUIDE.md) for complete design system documentation.
-
-## 📱 Usage
-
-### Research Flow Mode
-1. **Ask a Question**: Use the search bar to ask your research question
-2. **Explore Nodes**: Click on nodes to expand and see AI-generated answers
-3. **Add Follow-ups**: Create connected research threads
-4. **Generate TLDR**: Summarize any research node
-5. **Visualize**: Drag and connect nodes to create research maps
-
-### Chat Mode
-1. **Start Conversation**: Ask questions in the chat interface
-2. **Threaded Discussion**: Follow-up questions create conversation threads
-3. **Context Preservation**: AI maintains conversation context
-4. **Quick Actions**: Regenerate, summarize, or add follow-ups
-
-## 🏗️ Architecture
-
-
-
-### Backend Integration
-- **Express Server**: RESTful API endpoints
-- **AI Integration**: perplexity API integration
-- **Context Management**: Conversation history and context paths
-
-## 🎯 Key Components
-
-### Research Flow
-- Interactive node-based research visualization
-- Drag-and-drop functionality
-- Connection management between research nodes
-- Real-time AI answer generation
-
-### Chat Interface
-- Modern chat UI with message bubbles
-- Threaded conversation support
-- Context-aware follow-up questions
-- Quick action buttons for each message
-
-### Design System
-- Consistent component library
-- Responsive design patterns
-- Accessibility features
-- Performance optimizations
-
-## 🔧 Customization
-
-### Styling
-The design system is built with Tailwind CSS and can be customized in:
-- `tailwind.config.js` - Design tokens and theme
-- `src/index.css` - Global styles and component classes
-- `STYLE_GUIDE.md` - Complete design system documentation
-
-### Adding New Features
-1. Create new components following the design system
-2. Use the established color palette and typography
-3. Follow accessibility guidelines
-4. Add proper loading states and error handling
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Follow the design system guidelines
-4. Add tests for new functionality
-5. Submit a pull request
-
-## 🙏 Acknowledgments
-
-- **Perplexity AI**: Design inspiration and UX patterns
-- **React Team**: Amazing framework and ecosystem
-- **Tailwind CSS**: Utility-first CSS framework
-- **Lucide**: Beautiful icon library
-- **ReactFlow**: Interactive flow diagrams
+**Perplexity Prism** is an intelligent **visual research copilot** that blends a clean **Chat UI** with a **graph-based research tree** (React Flow).  
+All intelligence is powered **solely by the Perplexity API** — no GPT or other LLMs.
 
 ---
 
-Built with ❤️ and modern web technologies
+## 🔥 TL;DR
+
+- Ask questions via **Chat** or **Graph**.  
+- Each node holds **Q/A + editable TL;DR** (short summary).  
+- **Follow-ups** become child nodes and **inherit full root→path context**.  
+- **Chat ↔ Graph stay in sync**.  
+- Built with **React, React Flow, Tailwind, Zustand**.  
+- **Perplexity API** is the only model backend.
+
+---
+
+## ✨ Key Features
+
+- **Dual Interfaces**
+  - 🗨️ **Chat UI** — linear, fast iteration (Perplexity-style).
+  - 🌳 **Graph UI (React Flow)** — draggable nodes, edges, minimap, zoom/pan.
+
+- **Contextual Follow-ups**
+  - Each follow-up **collects context from the root to the current node**, then calls Perplexity with that full path.
+
+- **Node Model**
+  - **Question + Answer**
+  - **Editable TL;DR** (short summary per node)
+  - (Planned) **Notes, tags, file attachments**, reorder/move across parents.
+
+- **Sync**
+  - Messages in **Chat** create/update nodes in **Graph**.
+  - Graph actions reflect in the Chat timeline.
+
+- **Export** (Planned)
+  - Export full tree or sub-tree to **Markdown/PDF**.
+
+- **Design**
+  - Clean, minimal **Perplexity-inspired** UX.
+  - TailwindCSS, responsive layout.
+
+---
+
+## 🧠 Intelligence Layer
+
+- API: `POST https://api.perplexity.ai/chat/completions`
+- Model: `sonar-pro` (configurable)
+- **Prompt Strategy (per follow-up)**:
+  1. Traverse up from the current node to the root, collecting **Q/A pairs**.
+  2. Build a contextual prompt block (root → … → current).
+  3. Append the **new question**.
+  4. Send to Perplexity; store **Answer** and update **TL;DR** (editable by user).
+
+**Example payload (frontend `fetch`):**
+```js
+const res = await fetch('https://api.perplexity.ai/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${import.meta.env.VITE_PERPLEXITY_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    model: 'sonar-pro',
+    messages: [
+      { role: 'system', content: 'You are a concise research assistant. Prefer citations when helpful.' },
+      { role: 'user', content: `Context:\n${contextText}\n\nQuestion:\n${question}` }
+    ]
+  })
+});
+const data = await res.json();
+```
+# 🏗️ Tech Stack
+
+| Layer         | Tools                                 |
+|---------------|---------------------------------------|
+| Frontend      | React + Vite                          |
+| Canvas        | React Flow                            |
+| Styling       | TailwindCSS                           |
+| State         | Zustand                               |
+| Intelligence  | Perplexity API                        |
+| Storage       | Supabase (planned)                    |
+| Hosting       | Vercel                                |
+| Export        | html2pdf.js / react-markdown (planned)|
+
+---
+
+# 🚀 Getting Started
+
+### 1) Install & Run
+```bash
+npm install
+npm run dev
+Visit: [http://localhost:5173](http://localhost:5173)
+```
+---
+
+## 2) Environment Variables
+
+Create `.env`:
+```bash
+VITE_PERPLEXITY_API_KEY=your_perplexity_api_key
+🔐 **In production**, proxy the API via a serverless endpoint instead of exposing the key to the client.
+```
+---
+
+## 3) Build
+
+```bash
+npm run build
+```
+🔗 **Chat ↔ Graph Sync**
+
+- Chat UI creates/updates nodes behind the scenes.  
+- Graph UI actions (new question, follow-up) append to Chat history.  
+- Both share the same underlying store (**Zustand**) for a single source of truth.  
+
+---
+
+🌳 **Context Traversal (Root → Path → Current)**
+
+**Goal:** Ensure every follow-up includes the full contextual history.
+
+**Algorithm (pseudocode):**
+```js
+function getPathContext(nodes, edges, currentNodeId) {
+  const parentMap = new Map(); // child -> parent
+  edges.forEach(e => parentMap.set(e.target, e.source));
+
+  const path = [];
+  let cursor = currentNodeId;
+  while (cursor) {
+    const node = nodes.find(n => n.id === cursor);
+    if (node) path.push(node); else break;
+    cursor = parentMap.get(cursor);
+  }
+  return path.reverse(); // root → ... → current
+}
+
+function buildContextText(path) {
+  return path.map((n, i) => {
+    const q = n.data?.question ?? n.data?.label ?? '(no question)';
+    const a = n.data?.answer ?? '(no answer yet)';
+    const s = n.data?.tldr ? `TL;DR: ${n.data.tldr}\n` : '';
+    return `#${i+1}\nQ: ${q}\n${s}A: ${a}\n`;
+  }).join('\n');
+}
+```
+
+
+Each node supports editable TL;DR which is included in context to keep follow-ups concise and focused.
+
+---
+
+✍️ **Editable TL;DRs**
+
+- Every node includes a TL;DR field (short human summary).  
+- Users can edit TL;DRs at any time.  
+- TL;DRs are included in the context block for follow-ups to guide the model efficiently.  
+
+**Best practices:**
+- Keep TL;DR ≤ 1–2 lines.  
+- Summarize the answer and the direction you want follow-ups to take.  
+
+---
+
+🧪 **Troubleshooting**
+
+**Tailwind v4 + PostCSS (ESM)**  
+Install plugin:
+```bash
+npm i -D @tailwindcss/postcss
+```
+
+`postcss.config.js` (ESM):
+```js
+import tailwindcss from '@tailwindcss/postcss';
+export default { plugins: [ tailwindcss({ config: './tailwind.config.js' }) ] };
+```
+
+**Nodes not draggable**  
+- Ensure no overlay with `pointer-events: none` is capturing events.  
+- React Flow nodes are draggable by default; verify custom node markup doesn’t block dragging.  
+
+---
+
+🗺️ **Roadmap**
+- Supabase persistence for trees, nodes (Q/A, TL;DR, notes, tags)  
+- Export sub-tree / full tree to Markdown / PDF  
+- Search across nodes  
+- Node version history  
+- Multi-user collaboration (presence, locking, merge)  
+- Serverless proxy for Perplexity key in production  
+
+---
+
+🤝 **Acknowledgments**
+- Built by Suraj.  
+- Powered by the Perplexity API.  
+- Inspired by Perplexity’s elegant research UX.  
