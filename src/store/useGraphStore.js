@@ -6,9 +6,9 @@ export const useGraphStore = create((set, get) => ({
     {
       id: "1",
       data: { 
-        question: "Welcome to Perplexity Prism", 
+        question: "", 
         answer: "", 
-        label: "Welcome to Perplexity Prism",
+        label: "",
         collapsed: false,
         tldr: "",
       },
@@ -33,7 +33,13 @@ export const useGraphStore = create((set, get) => ({
       const id = nanoid();
       const newNode = {
         id,
-        data: { question, answer, label: `${question} — ${answer}`, collapsed: false, tldr: "" },
+        data: { 
+          question, 
+          answer, 
+          label: [question, answer].filter(Boolean).join(" — "), 
+          collapsed: false, 
+          tldr: "" 
+        },
         position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 100 },
         draggable: true,
         connectable: true,
@@ -67,7 +73,9 @@ export const useGraphStore = create((set, get) => ({
               data: { 
                 ...n.data, 
                 ...newData, 
-                label: `${newData.question || n.data.question} — ${newData.answer || n.data.answer}`,
+                label: [newData.question ?? n.data.question, newData.answer ?? n.data.answer]
+                  .filter(Boolean)
+                  .join(" — "),
                 isBlankFollowUp: false,
               } 
             }

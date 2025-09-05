@@ -16,24 +16,31 @@ const ChatThread = ({ nodeId, depth = 0 }) => {
     .filter(Boolean);
 
   return (
-    <div className="relative flex flex-col">
-      {/* Message with indent and connection line */}
-      <div className={`relative ${depth > 0 ? "ml-8 pt-4" : ""}`}>
-        {depth > 0 && (
-          <>
-            <div className="absolute left-[-24px] top-0 bottom-0 border-l-2 border-gray-200" />
-            <div className="absolute left-[-24px] top-[24px] w-6 border-t-2 border-gray-200" />
-          </>
-        )}
+    <div className="relative">
+      {/* Main Message */}
+      <div className={`${depth > 0 ? "ml-8" : ""}`}>
         <ChatMessage node={node} />
       </div>
 
-      {/* Child messages */}
-      <div className="mt-4">
-        {childNodes.map((child) => (
-          <ChatThread key={child.id} nodeId={child.id} depth={depth + 1} />
-        ))}
-      </div>
+      {/* Child Messages with Connection Lines */}
+      {childNodes.length > 0 && (
+        <div className="mt-6 space-y-6">
+          {childNodes.map((child, index) => (
+            <div key={child.id} className="relative">
+              {/* Connection Line */}
+              <div className="absolute left-4 top-0 bottom-0 w-px bg-gradient-to-b from-primary-300 to-transparent" />
+              
+              {/* Connection Dot */}
+              <div className="absolute left-4 top-6 w-2 h-2 bg-primary-500 rounded-full border-2 border-white shadow-sm" />
+              
+              {/* Child Thread */}
+              <div className="ml-8">
+                <ChatThread nodeId={child.id} depth={depth + 1} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

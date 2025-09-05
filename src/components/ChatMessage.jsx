@@ -2,6 +2,15 @@
 import React, { useState } from "react";
 import { useGraphStore } from "../store/useGraphStore";
 import { generateNodeSummary } from "../utils/aiGeneration";
+import { 
+  RotateCcw, 
+  FileText, 
+  Plus, 
+  Sparkles, 
+  Edit3,
+  MessageSquare,
+  User
+} from "lucide-react";
 
 const ChatMessage = ({ node }) => {
   const updateNode = useGraphStore((state) => state.updateNode);
@@ -59,24 +68,118 @@ const ChatMessage = ({ node }) => {
   };
 
   return (
-    <div className="flex flex-col gap-1 bg-white p-4 rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition w-full max-w-[600px]">
-      {/* Question with thread indicator */}
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-1 h-1 rounded-full bg-blue-500"></div>
-        <input
-          type="text"
-          value={questionEdit}
-          onChange={(e) => setQuestionEdit(e.target.value)}
-          className="flex-1 text-sm font-semibold px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
+    <div className="space-y-4">
+      {/* Question Message */}
+      <div className="flex items-start space-x-3">
+        <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+          <User className="w-4 h-4 text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="bg-white rounded-2xl rounded-tl-md shadow-sm border border-gray-200 p-4">
+            <input
+              type="text"
+              value={questionEdit}
+              onChange={(e) => setQuestionEdit(e.target.value)}
+              className="w-full text-sm font-medium text-gray-900 bg-transparent border-none outline-none focus:ring-0 placeholder:text-gray-400"
+              placeholder="Enter your question..."
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Answer with better containment */}
-      <div className="text-gray-700 text-sm mb-2 max-h-[200px] overflow-y-auto pl-3 border-l-2 border-gray-200">
-        {node.data.answer || "(No answer yet)"}
-      </div>
-      
-      {/* Rest of the component remains the same */}
+      {/* Answer Message */}
+      {node.data.answer && (
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-secondary-500 to-secondary-600 rounded-lg flex items-center justify-center">
+            <MessageSquare className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="bg-gray-50 rounded-2xl rounded-tl-md border border-gray-200 p-4">
+              <div className="text-sm text-gray-700 leading-relaxed mb-3">
+                {node.data.answer}
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={handleRegenerateAnswer}
+                  disabled={loadingAsk}
+                  className="btn-secondary text-xs px-3 py-1.5 flex items-center space-x-1"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>{loadingAsk ? "Asking..." : "Regenerate"}</span>
+                </button>
+
+                <button
+                  onClick={fetchSummaryAsTLDR}
+                  disabled={loadingSummary}
+                  className="btn-secondary text-xs px-3 py-1.5 flex items-center space-x-1"
+                >
+                  <FileText className="w-3 h-3" />
+                  <span>{loadingSummary ? "Summarizing..." : "TLDR"}</span>
+                </button>
+
+                <button
+                  onClick={() => addFollowUpBlank(node.id)}
+                  className="btn-secondary text-xs px-3 py-1.5 flex items-center space-x-1"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>Follow-up</span>
+                </button>
+              </div>
+
+              {/* TLDR Summary */}
+              {node.data.tldr && (
+                <div className="mt-3 p-3 bg-gradient-to-r from-secondary-50 to-secondary-100 rounded-lg border border-secondary-200">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Sparkles className="w-3 h-3 text-secondary-600" />
+                    <span className="text-xs font-semibold text-secondary-700 uppercase tracking-wide">TLDR</span>
+                    <button
+                      onClick={() => setEditingTLDR(true)}
+                      className="ml-auto p-1 hover:bg-secondary-200 rounded transition-colors"
+                    >
+                      <Edit3 className="w-3 h-3 text-secondary-600" />
+                    </button>
+                  </div>
+                  
+                  {editingTLDR ? (
+                    <div className="space-y-2">
+                      <textarea
+                        value={tldrEdit}
+                        onChange={(e) => setTldrEdit(e.target.value)}
+                        className="w-full text-xs p-2 border border-secondary-300 rounded focus:outline-none focus:ring-1 focus:ring-secondary-500 resize-none"
+                        rows={2}
+                        placeholder="Enter your summary..."
+                      />
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={saveCustomTLDR}
+                          className="btn-primary text-xs px-2 py-1"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingTLDR(false);
+                            setTldrEdit(node.data.tldr);
+                          }}
+                          className="btn-secondary text-xs px-2 py-1"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-secondary-800 leading-relaxed">
+                      {node.data.tldr}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
