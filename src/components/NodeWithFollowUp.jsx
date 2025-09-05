@@ -88,8 +88,8 @@ const NodeWithFollowUp = ({ id, data }) => {
       const deltaX = e.clientX - startX;
       const deltaY = e.clientY - startY;
       
-      const newWidth = Math.max(250, Math.min(600, startWidth + deltaX));
-      const newHeight = Math.max(180, Math.min(500, startHeight + deltaY));
+      const newWidth = Math.max(200, Math.min(500, startWidth + deltaX));
+      const newHeight = Math.max(150, Math.min(400, startHeight + deltaY));
       
       setTldrSize({ width: newWidth, height: newHeight });
     };
@@ -200,47 +200,40 @@ const NodeWithFollowUp = ({ id, data }) => {
 
       {/* TLDR Panel - Attached to Node */}
       {data.tldr && (
-        <div 
-          className={`absolute top-0 left-full ml-8 bg-white border border-gray-200 rounded-xl shadow-xl transition-all duration-200 hover:shadow-2xl group/tldr ${isResizing ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}`}
-          style={{
-            width: tldrSize.width,
-            height: tldrSize.height,
-            minWidth: '250px',
-            minHeight: '180px',
-            zIndex: 10
-          }}
-        >
+                 <div 
+           className={`absolute top-1/2 left-full -translate-y-1/2 ml-6 bg-white border border-gray-200 rounded-xl shadow-xl transition-all duration-200 hover:shadow-2xl group/tldr ${
+             isResizing ? 'ring-2 ring-blue-400 ring-opacity-50' : ''
+           }`}
+           style={{
+             width: tldrSize.width,
+             height: tldrSize.height,
+             minWidth: '200px',
+             minHeight: '150px',
+             maxWidth: '500px',
+             maxHeight: '400px'
+           }}
+         >
           {/* Header */}
           <div className="flex items-center justify-between p-3 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl">
-            <div className="flex items-center space-x-2">
-              <Sparkles className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-semibold text-gray-700">TLDR Summary</span>
-              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                {Math.round(tldrSize.width)}×{Math.round(tldrSize.height)}
-              </span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEditingTLDR(!editingTLDR);
-                }}
-                className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors"
-                title="Edit"
-              >
-                <Edit3 className="w-3 h-3 text-blue-600" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  updateNode(id, { tldr: "" });
-                }}
-                className="p-1.5 hover:bg-red-100 rounded-lg transition-colors"
-                title="Close TLDR"
-              >
-                <X className="w-3 h-3 text-red-600" />
-              </button>
-            </div>
+                         <div className="flex items-center space-x-2">
+               <Sparkles className="w-4 h-4 text-blue-600" />
+               <span className="text-sm font-semibold text-gray-700">TLDR Summary</span>
+               {isResizing && (
+                 <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+                   Resizing...
+                 </span>
+               )}
+             </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingTLDR(!editingTLDR);
+              }}
+              className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors"
+              title="Edit"
+            >
+              <Edit3 className="w-3 h-3 text-blue-600" />
+            </button>
           </div>
           
           {/* Content */}
@@ -282,25 +275,19 @@ const NodeWithFollowUp = ({ id, data }) => {
             )}
           </div>
           
-          {/* Resize handle */}
-          <div
-            className="absolute bottom-0 right-0 w-8 h-8 cursor-se-resize bg-blue-500 hover:bg-blue-600 transition-all duration-200 opacity-90 hover:opacity-100"
-            onMouseDown={handleTLDRResizeStart}
-            style={{
-              clipPath: 'polygon(100% 0%, 0% 100%, 100% 100%)'
-            }}
-            title="Drag to resize"
-          />
-          
-          {/* Resize indicator dots */}
-          <div className="absolute bottom-1 right-1 w-6 h-6 pointer-events-none">
-            <div className="absolute bottom-0 right-0 w-1 h-1 bg-white rounded-full"></div>
-            <div className="absolute bottom-0 right-1.5 w-1 h-1 bg-white rounded-full"></div>
-            <div className="absolute bottom-0 right-3 w-1 h-1 bg-white rounded-full"></div>
-            <div className="absolute bottom-1.5 right-0 w-1 h-1 bg-white rounded-full"></div>
-            <div className="absolute bottom-1.5 right-1.5 w-1 h-1 bg-white rounded-full"></div>
-            <div className="absolute bottom-3 right-0 w-1 h-1 bg-white rounded-full"></div>
-          </div>
+                     {/* Resize handle */}
+           <div
+             className={`absolute bottom-0 right-0 w-6 h-6 cursor-se-resize transition-all duration-200 ${
+               isResizing 
+                 ? 'bg-blue-500 shadow-lg' 
+                 : 'bg-gray-400 hover:bg-gray-500 hover:shadow-md'
+             }`}
+             onMouseDown={handleTLDRResizeStart}
+             style={{
+               clipPath: 'polygon(100% 0%, 0% 100%, 100% 100%)'
+             }}
+             title="Drag to resize TLDR box"
+           />
         </div>
       )}
     </div>
